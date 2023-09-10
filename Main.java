@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Main {
 
-    static boolean exixtenErrores = false;
+    static boolean existenErrores = false;
 
     public static void main(String[] args) throws IOException {
         if(args.length > 1) {
@@ -23,7 +23,15 @@ public class Main {
         }
     } //nos ayuda a ver como va a empezar a ejecutar el programa
 
-    private static void ejecutarArchivo(String path) throws IOException {
+    private static void ejecutarArchivo(String path) throws IOException{
+        byte[] bytes = Files.readAllBytes(Paths.get(path));
+        ejecutar(new String(bytes, Charset.defaultCharset()));
+
+        //Se indica que existe un error
+        if(existenErrores) System.exit(65);
+    }
+
+    private static void ejecutarPrompt() throws IOException {
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
 
@@ -31,7 +39,7 @@ public class Main {
             System.out.print(">>> ");
             String linea = reader.readLine();
             if(linea == null) break; //Presionar Ctrl + D
-            ejecutar linea;
+            ejecutar(linea);
             existenErrores = false;
         }
     }
@@ -45,7 +53,7 @@ public class Main {
                 System.out.println(token);
             }
         }
-        catch (Exeption ex){
+        catch (Exception ex){
             ex.printStackTrace();
         }
     }
