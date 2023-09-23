@@ -43,30 +43,20 @@ public class Scanner {
             switch (estado){
                 case 0:
                     if(Character.isLetter(c)){
-                        estado = 9;
+                        estado = 13;
                         lexema += c;
                     }
                     else if(Character.isDigit(c)){
-                        estado = 11;
+                        estado = 15;
                         lexema += c;
 
-                        /*while(Character.isDigit(c)){
-                            lexema += c;
-                            i++;
-                            c = source.charAt(i);
-                        }
-                        Token t = new Token(TipoToken.NUMBER, lexema);
-                        lexema = "";
-                        estado = 0;
-                        tokens.add(t);
-                        */
                     }
 
                     break;
 
-                case 9:
+                case 13:
                     if(Character.isLetter(c) || Character.isDigit(c)){
-                        estado = 9;
+                        estado = 13;
                         lexema += c;
                     }
                     else{
@@ -87,23 +77,95 @@ public class Scanner {
                         i--;
                     }
                     break;
-                case 11:
+                case 15:
                     if(Character.isDigit(c)){
-                        estado = 11;
+                        estado = 15;
                         lexema += c;
                     }
                     else if(c == '.'){
-
+                        estado = 16;
+                        lexema += c;
                     }
                     else if(c == 'E'){
-
+                        estado = 18;
+                        lexema += c;
                     }
                     else{
                         Token t = new Token(TipoToken.NUMBER, lexema, Integer.valueOf(lexema));
-                        tokens.add(t);
+                        tokens.add(t); //Aquí se mandaría al estado 22 siguiendo el afd
 
                         estado = 0;
                         lexema = "";
+                        i--;
+                    }
+                    break;
+                case 16:
+                    if(Character.isDigit(c)){
+                        estado = 17;
+                        lexema += c;
+                    }
+                    else{
+                        //tenemos que ver si hay algún error aquí): no sé cómo aún
+                        estado = 0;
+                        lexema = ""; //No generamos token y lo mandamos de regreso
+                    }
+                    break;
+                case 17:
+                    if(Character.isDigit(c)){
+                        estado = 17;
+                        lexema += c;
+                    }
+                    else if(c == 'E'){
+                        estado = 18;
+                        lexema += c;
+                    }
+                    else {
+                        Token t = new Token(TipoToken.NUMBER, lexema);
+                        tokens.add(t); //Aquí se mandaría al estado 23 siguiendo el afd
+
+                        estado = 0;
+                        lexema = "";
+                        i--;
+                    }
+                    break;
+                case 18:
+                    if(c == '+' || c == '-'){
+                       estado = 19;
+                       lexema += c;
+                    }
+                    else if(Character.isDigit(c)){
+                        estado = 20;
+                        lexema += c;
+                    }
+                    else{
+                        //tenemos que ver si hay algún error aquí): no sé cómo aún
+                        estado = 0;
+                        lexema = ""; //No generamos token y lo mandamos de regreso
+                    }
+                    break;
+                case 19:
+                    if(Character.isDigit(c)){
+                        estado = 20;
+                        lexema += c;
+                    }
+                    else{
+                        //tenemos que ver si hay algún error aquí): no sé cómo aún
+                        estado = 0;
+                        lexema = ""; //No generamos token y lo mandamos de regreso
+                    }
+                    break;
+                case 20:
+                    if(Character.isDigit(c)){
+                        estado = 20;
+                        lexema += c;
+                    }
+                    else{
+                        Token t = new Token(TipoToken.NUMBER, lexema);
+                        tokens.add(t); //Aquí se mandaría al estado 21 siguiendo el afd
+
+                        estado = 0;
+                        lexema = "";
+                        i--;
                     }
                     break;
             }
