@@ -1,11 +1,9 @@
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Scanner {
 
     private static final Map<String, TipoToken> palabrasReservadas;
+    public static final Map<String, TipoToken> simbolos;
 
     static {
         palabrasReservadas = new HashMap<>();
@@ -22,11 +20,25 @@ public class Scanner {
         palabrasReservadas.put("true",   TipoToken.TRUE);
         palabrasReservadas.put("var",    TipoToken.VAR);
         palabrasReservadas.put("while",  TipoToken.WHILE);
+
+        simbolos = new HashMap<>();
+        simbolos.put("+",   TipoToken.PLUS);
+        simbolos.put("-",   TipoToken.MINUS);
+        simbolos.put("*",   TipoToken.STAR);
+        simbolos.put("{",   TipoToken.LEFT_BRACE);
+        simbolos.put("}",   TipoToken.RIGHT_BRACE);
+        simbolos.put("(",   TipoToken.LEFT_PAREN);
+        simbolos.put(")",   TipoToken.RIGHT_PAREN);
+        simbolos.put(",",   TipoToken.COMMA);
+        simbolos.put(".",   TipoToken.DOT);
+        simbolos.put(";",   TipoToken.SEMICOLON);
     }
 
     private final String source;
 
     private final List<Token> tokens = new ArrayList<>();
+
+    private final List<String> caracteres = Arrays.asList("+", "-", "*", "{", "}", "(", ")", ",", ".",";");
 
     public Scanner(String source){
         this.source = source + " ";
@@ -49,14 +61,92 @@ public class Scanner {
                     else if(Character.isDigit(c)){
                         estado = 15;
                         lexema += c;
-
+                    }
+                    else if(c == '>'){
+                        estado = 1;
+                        lexema += c;
+                    }
+                    else if(c == '<'){
+                        estado = 4;
+                        lexema += c;
+                    }
+                    else if(c == '='){
+                        estado = 7;
+                        lexema += c;
+                    }
+                    else if(c == '!'){
+                        estado = 10;
+                        lexema += c;
+                    }
+                    else if(caracteres.contains(c+"")){
+                        estado = 33;
+                        lexema += c;
                     }
 
                     break;
+                case 1:
+                    if(c == '='){
+                        lexema += c;
+                        Token t = new Token(TipoToken.GREATER_EQUAL, lexema);
+                        tokens.add(t);
+                    }
+                    else{
+                        Token t = new Token(TipoToken.GREATER, lexema);
+                        tokens.add(t);
+                        i--;
+                    }
 
+                    estado = 0;
+                    lexema = "";
+                    break;
+                case 4:
+                    if(c == '='){
+                        lexema += c;
+                        Token t = new Token(TipoToken.LESS_EQUAL, lexema);
+                        tokens.add(t);
+                    }
+                    else{
+                        Token t = new Token(TipoToken.LESS, lexema);
+                        tokens.add(t);
+                        i--;
+                    }
+
+                    estado = 0;
+                    lexema = "";
+                    break;
+                case 7:
+                    if(c == '='){
+                        lexema += c;
+                        Token t = new Token(TipoToken.EQUAL_EQUAL, lexema);
+                        tokens.add(t);
+                    }
+                    else{
+                        Token t = new Token(TipoToken.EQUAL, lexema);
+                        tokens.add(t);
+                        i--;
+                    }
+
+                    estado = 0;
+                    lexema = "";
+                    break;
+                case 10:
+                    if(c == '='){
+                        lexema += c;
+                        Token t = new Token(TipoToken.BANG_EQUAL, lexema);
+                        tokens.add(t);
+                    }
+                    else{
+                        Token t = new Token(TipoToken.BANG, lexema);
+                        tokens.add(t);
+                        i--;
+                    }
+
+                    estado = 0;
+                    lexema = "";
+                    break;
                 case 13:
                     if(Character.isLetter(c) || Character.isDigit(c)){
-                        estado = 13;
+                        //estado = 13;
                         lexema += c;
                     }
                     else{
@@ -79,7 +169,7 @@ public class Scanner {
                     break;
                 case 15:
                     if(Character.isDigit(c)){
-                        estado = 15;
+                        //estado = 15;
                         lexema += c;
                     }
                     else if(c == '.'){
@@ -112,7 +202,7 @@ public class Scanner {
                     break;
                 case 17:
                     if(Character.isDigit(c)){
-                        estado = 17;
+                        //estado = 17;
                         lexema += c;
                     }
                     else if(c == 'E'){
@@ -156,7 +246,7 @@ public class Scanner {
                     break;
                 case 20:
                     if(Character.isDigit(c)){
-                        estado = 20;
+                        //estado = 20;
                         lexema += c;
                     }
                     else{
@@ -167,6 +257,15 @@ public class Scanner {
                         lexema = "";
                         i--;
                     }
+                    break;
+                case 33:
+                    TipoToken tt = simbolos.get(lexema);
+                    Token t = new Token(tt, lexema);
+                    tokens.add(t);
+
+                    estado = 0;
+                    lexema = "";
+                    i--;
                     break;
             }
         }
