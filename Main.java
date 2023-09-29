@@ -59,7 +59,7 @@ public class Main {
     }
 
     /* El método error se puede usar desde las distintas clases para
-    reportar los errores: Interprete.error(...);
+    reportar los errores: Main.error(...);
      */
     static void error(int linea, String mensaje){
         reportar(linea, "", mensaje);

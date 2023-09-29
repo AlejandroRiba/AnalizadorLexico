@@ -47,11 +47,16 @@ public class Scanner {
     public List<Token> scan() throws Exception {
         String lexema = "";
         int estado = 0;
+        int linea = 1;
         char c;
 
         for(int i=0; i<source.length(); i++){
             c = source.charAt(i);
-
+            if(i>=1){
+                if(source.charAt(i - 1) == '\n'){  //solo aumentamos el número de linea después de analizar el salto con su respectiva linea
+                    linea += 1; //si el caracter anterior era salto, entonces es otra linea
+                }
+            }
             switch (estado){
                 case 0:
                     if(Character.isLetter(c)){
@@ -76,6 +81,14 @@ public class Scanner {
                     }
                     else if(c == '!'){
                         estado = 10;
+                        lexema += c;
+                    }
+                    else if(c == '/'){
+                        estado = 26;
+                        lexema += c;
+                    }
+                    else if(c == '"'){
+                        estado = 24;
                         lexema += c;
                     }
                     else if(caracteres.contains(c+"")){
@@ -256,6 +269,64 @@ public class Scanner {
                         estado = 0;
                         lexema = "";
                         i--;
+                    }
+                    break;
+                case 24:
+                    if(c == '\n'){
+                        //necesitamos colocar el error, pero aún no se como
+                        Main.error(linea,"Se esperaban comillas para el cierre de la cadena");
+                    } else if (c == '"') {
+                        //aceptado
+                        lexema += c; //agregamos las ultimas comillas al lexema
+                        Token t = new Token(TipoToken.STRING, lexema);
+                        tokens.add(t); //considerado edo. 25
+
+                        estado = 0;
+                        lexema = "";
+                    } else{
+                        estado = 24;
+                        lexema += c;
+                    }
+                    break;
+                case 26:
+                    if(c == '*'){
+                        estado = 27;
+                    } else if (c == '/') {
+                        estado = 30;
+                    } else{
+                        Token t = new Token(TipoToken.SLASH, lexema);
+                        tokens.add(t); //estado 32
+
+                        estado = 0;
+                        lexema = "";
+                        i--;
+                    }
+                    break;
+                case 27:
+                    if(c == '*'){
+                        estado = 28;
+                    }
+                    else{
+                        estado = 27;
+                    }
+                    break;
+                case 28:
+                    if(c == '*'){
+                        estado = 28;
+                    } else if (c == '/') {
+                        estado = 0;
+                        lexema = ""; //aquí se acepta, pero no genera token, reiniciamos el lexema solo por si acaso, edo. 29
+                    } else{
+                        estado = 27;
+                    }
+                    break;
+                case 30:
+                    if(c == '\n'){
+                        estado = 0;
+                        lexema = ""; //se acepta y no genera token. edo. 31
+                    }
+                    else{
+                        estado = 30;
                     }
                     break;
                 case 33:
