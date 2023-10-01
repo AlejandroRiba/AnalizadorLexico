@@ -5,6 +5,8 @@ public class Scanner {
     private static final Map<String, TipoToken> palabrasReservadas;
     public static final Map<String, TipoToken> simbolos;
 
+    static boolean error = false;
+
     static {
         palabrasReservadas = new HashMap<>();
         palabrasReservadas.put("and",    TipoToken.AND);
@@ -208,9 +210,8 @@ public class Scanner {
                         lexema += c;
                     }
                     else{
-                        //tenemos que ver si hay algún error aquí): no sé cómo aún
-                        estado = 0;
-                        lexema = ""; //No generamos token y lo mandamos de regreso
+                        Main.error(linea,"Se esperaba un número para parte decimal");
+                        estado = -1; //No generamos token y lo mandamos al estado de error
                     }
                     break;
                 case 17:
@@ -223,7 +224,7 @@ public class Scanner {
                         lexema += c;
                     }
                     else {
-                        Token t = new Token(TipoToken.NUMBER, lexema);
+                        Token t = new Token(TipoToken.NUMBER, lexema, Double.valueOf(lexema));
                         tokens.add(t); //Aquí se mandaría al estado 23 siguiendo el afd
 
                         estado = 0;
@@ -241,9 +242,8 @@ public class Scanner {
                         lexema += c;
                     }
                     else{
-                        //tenemos que ver si hay algún error aquí): no sé cómo aún
-                        estado = 0;
-                        lexema = ""; //No generamos token y lo mandamos de regreso
+                        Main.error(linea,"Se esperaba un '+', un '-' o un número para exponente");
+                        estado = -1; //No generamos token y lo mandamos al estado de error
                     }
                     break;
                 case 19:
@@ -252,9 +252,8 @@ public class Scanner {
                         lexema += c;
                     }
                     else{
-                        //tenemos que ver si hay algún error aquí): no sé cómo aún
-                        estado = 0;
-                        lexema = ""; //No generamos token y lo mandamos de regreso
+                        Main.error(linea,"Se esperaba un número para parte exponente");
+                        estado = -1; //No generamos token y lo mandamos al estado de error
                     }
                     break;
                 case 20:
@@ -263,7 +262,7 @@ public class Scanner {
                         lexema += c;
                     }
                     else{
-                        Token t = new Token(TipoToken.NUMBER, lexema);
+                        Token t = new Token(TipoToken.NUMBER, lexema, Double.valueOf(lexema));
                         tokens.add(t); //Aquí se mandaría al estado 21 siguiendo el afd
 
                         estado = 0;
@@ -273,8 +272,8 @@ public class Scanner {
                     break;
                 case 24:
                     if(c == '\n'){
-                        //necesitamos colocar el error, pero aún no se como
                         Main.error(linea,"Se esperaban comillas para el cierre de la cadena");
+                        estado = -1;
                     } else if (c == '"') {
                         //aceptado
                         lexema += c; //agregamos las ultimas comillas al lexema
@@ -284,7 +283,7 @@ public class Scanner {
                         estado = 0;
                         lexema = "";
                     } else{
-                        estado = 24;
+                        //estado = 24;
                         lexema += c;
                     }
                     break;
@@ -338,7 +337,13 @@ public class Scanner {
                     lexema = "";
                     i--;
                     break;
+                default: //Se usa el default como estado muerto o de error
+                    error = true;
+                    lexema = "";
             }
+
+            if(error)
+                break;
         }
 
 

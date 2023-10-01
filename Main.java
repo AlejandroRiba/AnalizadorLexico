@@ -67,7 +67,7 @@ public class Main {
 
     private static void reportar(int linea, String posicion, String mensaje){
         System.err.println(
-                "[linea" + linea + "] Error " + posicion + ": " + mensaje
+                "[linea " + linea + "] Error " + posicion + ": " + mensaje
         );
         existenErrores = true;
     }
