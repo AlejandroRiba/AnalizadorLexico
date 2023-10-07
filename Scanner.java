@@ -4,8 +4,9 @@ public class Scanner {
 
     private static final Map<String, TipoToken> palabrasReservadas;
     public static final Map<String, TipoToken> simbolos;
-
-    static boolean error = false;
+    //Constantes para imprimir texto de errores en rojo
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_RESET = "\u001B[0m";
 
     static {
         palabrasReservadas = new HashMap<>();
@@ -40,7 +41,7 @@ public class Scanner {
 
     private final List<Token> tokens = new ArrayList<>();
 
-    private final List<String> caracteres = Arrays.asList("+", "-", "*", "{", "}", "(", ")", ",", ".",";");
+    private final List<Character> caracteres = Arrays.asList('+', '-', '*', '{', '}', '(', ')', ',', '.', ';');
 
     public Scanner(String source){
         this.source = source + " ";
@@ -93,9 +94,13 @@ public class Scanner {
                         estado = 24;
                         lexema += c;
                     }
-                    else if(caracteres.contains(c+"")){
+                    else if(caracteres.contains(c)){
                         estado = 33;
                         lexema += c;
+                    }
+                    else if(c > 32){ //Si la variable c es diferente a cualquier caracter especial como el espacio, '\n' u otro
+                        System.out.println(ANSI_RED + "[linea " + linea + "] Error: Se encontró un caracter ajeno al lenguaje '" + c +"'" + ANSI_RESET);
+                        estado = -1;
                     }
 
                     break;
@@ -161,7 +166,7 @@ public class Scanner {
                     break;
                 case 13:
                     if(Character.isLetter(c) || Character.isDigit(c)){
-                        //estado = 13;
+                        estado = 13;
                         lexema += c;
                     }
                     else{
@@ -184,7 +189,7 @@ public class Scanner {
                     break;
                 case 15:
                     if(Character.isDigit(c)){
-                        //estado = 15;
+                        estado = 15;
                         lexema += c;
                     }
                     else if(c == '.'){
@@ -210,13 +215,14 @@ public class Scanner {
                         lexema += c;
                     }
                     else{
-                        Main.error(linea,"Se esperaba un número para parte decimal");
+                        System.out.println(ANSI_RED + "[linea " + linea + "] Error: Se esperaba un número para parte decimal" + ANSI_RESET);
+                        //Main.error(linea,"Se esperaba un número para parte decimal");
                         estado = -1; //No generamos token y lo mandamos al estado de error
                     }
                     break;
                 case 17:
                     if(Character.isDigit(c)){
-                        //estado = 17;
+                        estado = 17;
                         lexema += c;
                     }
                     else if(c == 'E'){
@@ -242,7 +248,7 @@ public class Scanner {
                         lexema += c;
                     }
                     else{
-                        Main.error(linea,"Se esperaba un '+', un '-' o un número para exponente");
+                        System.out.println(ANSI_RED + "[linea " + linea + "] Error: Se esperaba un '+', un '-' o un número para exponente" + ANSI_RESET);
                         estado = -1; //No generamos token y lo mandamos al estado de error
                     }
                     break;
@@ -252,13 +258,13 @@ public class Scanner {
                         lexema += c;
                     }
                     else{
-                        Main.error(linea,"Se esperaba un número para parte exponente");
+                        System.out.println(ANSI_RED + "[linea " + linea + "] Error: Se esperaba un número para parte exponente" + ANSI_RESET);
                         estado = -1; //No generamos token y lo mandamos al estado de error
                     }
                     break;
                 case 20:
                     if(Character.isDigit(c)){
-                        //estado = 20;
+                        estado = 20;
                         lexema += c;
                     }
                     else{
@@ -271,19 +277,19 @@ public class Scanner {
                     }
                     break;
                 case 24:
-                    if(c == '\n'){
-                        Main.error(linea,"Se esperaban comillas para el cierre de la cadena");
+                    if(c == '\n' || i == source.length()-1){
+                        System.out.println(ANSI_RED + "[linea " + linea + "] Error: Se esperaban comillas para el cierre de la cadena" + ANSI_RESET);
                         estado = -1;
                     } else if (c == '"') {
                         //aceptado
                         lexema += c; //agregamos las ultimas comillas al lexema
-                        Token t = new Token(TipoToken.STRING, lexema);
+                        Token t = new Token(TipoToken.STRING, lexema, String.valueOf(lexema.substring(1, lexema.length()-1)));
                         tokens.add(t); //considerado edo. 25
 
                         estado = 0;
                         lexema = "";
                     } else{
-                        //estado = 24;
+                        estado = 24;
                         lexema += c;
                     }
                     break;
@@ -304,8 +310,10 @@ public class Scanner {
                 case 27:
                     if(c == '*'){
                         estado = 28;
-                    }
-                    else{
+                    } else if(i == source.length()-1){
+                        System.out.println(ANSI_RED + "[linea " + linea + "] Error: Comentario multilinea no cerrado" + ANSI_RESET);
+                        estado = -1;
+                    } else{
                         estado = 27;
                     }
                     break;
@@ -315,12 +323,15 @@ public class Scanner {
                     } else if (c == '/') {
                         estado = 0;
                         lexema = ""; //aquí se acepta, pero no genera token, reiniciamos el lexema solo por si acaso, edo. 29
+                    } else if(i == source.length()-1){
+                        System.out.println(ANSI_RED + "[linea " + linea + "] Error: Comentario multilinea no cerrado" + ANSI_RESET);
+                        estado = -1;
                     } else{
                         estado = 27;
                     }
                     break;
                 case 30:
-                    if(c == '\n'){
+                    if(c == '\n' || i == source.length()-1){
                         estado = 0;
                         lexema = ""; //se acepta y no genera token. edo. 31
                     }
@@ -338,15 +349,18 @@ public class Scanner {
                     i--;
                     break;
                 default: //Se usa el default como estado muerto o de error
-                    error = true;
                     lexema = "";
+                    break;
             }
 
-            if(error)
+            if(estado==-1)
                 break;
         }
 
-
+        if(estado == 0){
+            Token t = new Token(TipoToken.EOF,"");
+            tokens.add(t);
+        }
         return tokens;
     }
 }
