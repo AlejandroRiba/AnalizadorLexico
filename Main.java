@@ -52,6 +52,11 @@ public class Main {
             for(Token token : tokens){
                 System.out.println(token);
             }
+
+            if(!existenErrores) {
+                Parser parser = new ASDR(tokens);
+                parser.parse();
+            }
         }
         catch (Exception ex){
             ex.printStackTrace();
@@ -61,14 +66,14 @@ public class Main {
     /* El método error se puede usar desde las distintas clases para
     reportar los errores: Main.error(...);
      */
-    static void error(int linea, String mensaje){
+    public static void error(int linea, String mensaje){
         reportar(linea, "", mensaje);
     }
 
     private static void reportar(int linea, String posicion, String mensaje){
-        System.err.println(
+        /*System.err.println(
                 "[linea " + linea + "] Error " + posicion + ": " + mensaje
-        );
+        );*/
         existenErrores = true;
     }
 

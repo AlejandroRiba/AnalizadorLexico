@@ -353,8 +353,10 @@ public class Scanner {
                     break;
             }
 
-            if(estado==-1)
+            if(estado==-1) {
+                Main.error(1, "Error");
                 break;
+            }
         }
 
         if(estado == 0){
