@@ -4,6 +4,8 @@ public class ASDR implements Parser{
     private boolean hayErrores = false;
     private Token preanalisis;
     private final List<Token> tokens;
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_RESET = "\u001B[0m";
 
     public ASDR(List<Token> tokens){
         this.tokens = tokens;
@@ -16,16 +18,20 @@ public class ASDR implements Parser{
         PROGRAM();
 
         if(preanalisis.tipo == TipoToken.EOF && !hayErrores){
-            System.out.println("Consulta correcta");
+            System.out.println("Codigo sintacticamente correcto");
             return  true;
         }else {
-            System.out.println("Se encontraron errores");
+            return false;
         }
-        return false;
     }
 
     private void PROGRAM(){ //PROGRAM -> DECLARATION
-        DECLARATION();
+        if(isEXPR_STMTderiv() || preanalisis.tipo == TipoToken.FUN || preanalisis.tipo == TipoToken.VAR || preanalisis.tipo == TipoToken.FOR || preanalisis.tipo == TipoToken.IF || preanalisis.tipo == TipoToken.PRINT || preanalisis.tipo == TipoToken.RETURN || preanalisis.tipo == TipoToken.WHILE || preanalisis.tipo == TipoToken.LEFT_BRACE || preanalisis.tipo == TipoToken.EOF) {
+            DECLARATION();
+        } else{
+            System.out.println(ANSI_RED + "Error sintactico encontrado, se esperaba 'fun', 'var', 'for', 'if', 'print', 'return', 'while', '{', '!', '-', 'true', 'false', 'null', un numero, una cadena, un identificador o '('" + ANSI_RESET);
+            Main.error(1,"Error");
+        }
     }
 
     private void DECLARATION(){ //DECLARATION -> FUN_DECL DECLARATION | VAR_DECL DECLARATION | STATEMENT DECLARATION | Ɛ
@@ -92,7 +98,8 @@ public class ASDR implements Parser{
             BLOCK();
         } else{
             hayErrores = true;
-            System.out.println("Se esperaba 'if', 'for', 'print', 'return', 'while', '{', '!', '-', 'true', 'false', 'null', un numero, una cadena, un identificador o '('");
+            System.out.println(ANSI_RED + "Error sintactico encontrado, se esperaba 'if', 'for', 'print', 'return', 'while', '{', '!', '-', 'true', 'false', 'null', un numero, una cadena, un identificador o '('" + ANSI_RED);
+            Main.error(1,"Error");
         }
     }
 
@@ -129,7 +136,8 @@ public class ASDR implements Parser{
             coincidir(TipoToken.SEMICOLON);
         } else{
             hayErrores = true;
-            System.out.println("Se esperaba 'var', ';', '!', '-', 'true', 'false', 'null', un numero, una cadena, un identificador o '('");
+            System.out.println(ANSI_RED + "Error sintactico encontrado, se esperaba 'var', ';', '!', '-', 'true', 'false', 'null', un numero, una cadena, un identificador o '('" + ANSI_RESET);
+            Main.error(1,"Error");
         }
     }
 
@@ -144,7 +152,8 @@ public class ASDR implements Parser{
             coincidir(TipoToken.SEMICOLON);
         } else{
             hayErrores = true;
-            System.out.println("Se esperaba ';', '!', '-', 'true', 'false', 'null', un numero, una cadena, un identificador o '('");
+            System.out.println(ANSI_RED + "Error sintactico encontrado, se esperaba ';', '!', '-', 'true', 'false', 'null', un numero, una cadena, un identificador o '('" + ANSI_RESET);
+            Main.error(1,"Error");
         }
     }
 
@@ -391,7 +400,8 @@ public class ASDR implements Parser{
             CALL();
         } else{
             hayErrores = true;
-            System.out.println("Se esperaba '!', '-', 'true', 'false', 'null', un numero, una cadena, un identificador o '('");
+            System.out.println(ANSI_RED + "Error sintactico encontrado, se esperaba '!', '-', 'true', 'false', 'null', un numero, una cadena, un identificador o '('" + ANSI_RESET);
+            Main.error(1,"Error");
         }
     }
 
@@ -427,7 +437,8 @@ public class ASDR implements Parser{
             coincidir(TipoToken.RIGHT_PAREN);
         } else{
             hayErrores = true;
-            System.out.println("Se esperaba 'true', 'false', 'null', un numero, una cadena, un identificador o '('");
+            System.out.println(ANSI_RED + "Error sintactico encontrado, se esperaba 'true', 'false', 'null', un numero, una cadena, un identificador o '('" + ANSI_RESET);
+            Main.error(1,"Error");
         }
     }
 
@@ -442,7 +453,7 @@ public class ASDR implements Parser{
         BLOCK();
     }
 
-    private void FUNCTIONS(){ //FUNCTIONS -> FUN_DECL FUNCTIONS | Ɛ
+    /*private void FUNCTIONS(){ //FUNCTIONS -> FUN_DECL FUNCTIONS | Ɛ
         if(hayErrores)
             return;
 
@@ -450,7 +461,7 @@ public class ASDR implements Parser{
             FUN_DECL();
             FUNCTIONS();
         }
-    }
+    }*/
 
     private void PARAMETERS_OPC(){ //PARAMETERS_OPC -> PARAMETERS | Ɛ
         if(hayErrores)
@@ -513,7 +524,8 @@ public class ASDR implements Parser{
             preanalisis = tokens.get(i);
         } else {
             hayErrores = true;
-            System.out.println("Error sintactico encontrado, se esperaba " + t);
+            System.out.println(ANSI_RED + "Error sintactico encontrado, se esperaba " + t + ANSI_RESET);
+            Main.error(1,"Error");
 
         }
     }
