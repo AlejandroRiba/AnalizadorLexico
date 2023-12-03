@@ -1,9 +1,7 @@
 package Principal;
 
-import Utils.ASDR;
-import Utils.Parser;
-import Utils.Scanner;
-import Utils.Token;
+import Statements.Statement;
+import Utils.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -55,6 +53,7 @@ public class Main {
         try{
             Scanner scanner = new Scanner(source);
             List<Token> tokens = scanner.scan();
+            List<Statement> program;
 
             for(Token token : tokens){
                 System.out.println(token);
@@ -64,6 +63,15 @@ public class Main {
                 Parser parser = new ASDR(tokens);
                 parser.parse();
             }
+
+            if(!existenErrores){
+                AST ast = new AST(tokens);
+                program = ast.program();
+                for(Statement stmt : program){
+                    System.out.println(stmt);
+                }
+            }
+
         }
         catch (Exception ex){
             ex.printStackTrace();

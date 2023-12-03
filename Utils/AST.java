@@ -14,11 +14,33 @@ public class AST {
 
     public AST(List<Token> tokens) {
         this.tokens = tokens;
+        preanalisis = this.tokens.get(i);
     }
 
-    // ...
-    // ...
-    // ...
+    public List<Statement> program(){
+        List<Statement> program = new ArrayList<>();
+        if(preanalisis.tipo != TipoToken.EOF){
+            return declaration(program);
+        }
+        return null;
+    }
+    private List<Statement> declaration(List<Statement> program){
+        if(preanalisis.tipo == TipoToken.FUN){
+            Statement stmt = funDecl();
+            program.add(stmt);
+            return declaration(program);
+        } else if(preanalisis.tipo == TipoToken.VAR){
+            Statement stmt = varDecl();
+            program.add(stmt);
+            return declaration(program);
+        } else if (isEXPR() || preanalisis.tipo == TipoToken.FOR || preanalisis.tipo == TipoToken.IF || preanalisis.tipo == TipoToken.PRINT || preanalisis.tipo == TipoToken.RETURN || preanalisis.tipo == TipoToken.WHILE || preanalisis.tipo == TipoToken.LEFT_BRACE) {
+            Statement stmt = statement();
+            program.add(stmt);
+            return declaration(program);
+        }
+        return program;
+    }
+
     private Statement funDecl(){
         match(TipoToken.FUN);
         return function();
@@ -28,18 +50,136 @@ public class AST {
         match(TipoToken.VAR);
         match(TipoToken.IDENTIFIER);
         Token id = previous();
-        Statement stmt = varInit(id);
+        Expression expr = varInit();
         match(TipoToken.SEMICOLON);
-        return stmt;
+        return new StmtVar(id,expr);
     }
 
-    private Statement varInit(Token id){
+    private Expression varInit(){
         if(preanalisis.tipo == TipoToken.EQUAL){
             match(TipoToken.EQUAL);
-            Expression expr = expression();
-            return new StmtVar(id,expr);
+            return expression();
         }
-        return new StmtVar(id,null);
+        return null;
+    }
+
+    private Statement statement(){
+        if(isEXPR()){
+            return exprStmt();
+        } else if(preanalisis.tipo == TipoToken.FOR){
+            return forStmt();
+        } else if(preanalisis.tipo == TipoToken.IF){
+            return ifStmt();
+        } else if(preanalisis.tipo == TipoToken.PRINT){
+            return printStmt();
+        } else if(preanalisis.tipo == TipoToken.RETURN){
+            return returnStmt();
+        } else if(preanalisis.tipo == TipoToken.WHILE){
+            return whileStmt();
+        } else if(preanalisis.tipo == TipoToken.LEFT_BRACE){
+            return block();
+        }
+        return null;
+    }
+
+    private Statement exprStmt(){
+        Expression expr = expression();
+        match(TipoToken.SEMICOLON);
+        return new StmtExpression(expr);
+    }
+
+    private Statement forStmt(){
+        match(TipoToken.FOR);
+        match(TipoToken.LEFT_PAREN);
+        Statement stmt1 = forStmt1();
+        Expression expr2 = forStmt2();
+        Expression expr3 = forStmt3();
+        match(TipoToken.RIGHT_PAREN);
+        Statement body = statement();
+        return new StmtFor(stmt1,expr2,expr3,body);
+    }
+
+    private Statement forStmt1(){
+        if(preanalisis.tipo == TipoToken.VAR){
+            return varDecl();
+        } else if(isEXPR()){
+            return exprStmt();
+        }
+        match(TipoToken.SEMICOLON);
+        return null;
+    }
+
+    private Expression forStmt2(){
+        if(isEXPR()){
+            Expression expr =  expression();
+            match(TipoToken.SEMICOLON);
+            return expr;
+        }
+        match(TipoToken.SEMICOLON);
+        return null;
+    }
+
+    private Expression forStmt3(){
+        if(isEXPR()){
+            return expression();
+        }
+        return null;
+    }
+
+    private Statement ifStmt(){
+        match(TipoToken.IF);
+        match(TipoToken.LEFT_PAREN);
+        Expression cond = expression();
+        match(TipoToken.RIGHT_PAREN);
+        Statement thenBr = statement();
+        Statement elseBr = elseStmt();
+        return new StmtIf(cond,thenBr,elseBr);
+    }
+
+    private Statement elseStmt(){
+        if(preanalisis.tipo == TipoToken.ELSE){
+            match(TipoToken.ELSE);
+            return statement();
+        }
+        return null;
+    }
+
+    private Statement printStmt(){
+        match(TipoToken.PRINT);
+        Expression expr = expression();
+        match(TipoToken.SEMICOLON);
+        return new StmtPrint(expr);
+    }
+
+    private Statement returnStmt(){
+        match(TipoToken.RETURN);
+        Expression retExp = retExpOpc();
+        match(TipoToken.SEMICOLON);
+        return new StmtReturn(retExp);
+    }
+
+    private Expression retExpOpc(){
+        if(isEXPR()){
+            return expression();
+        }
+        return null;
+    }
+
+    private Statement whileStmt(){
+        match(TipoToken.WHILE);
+        match(TipoToken.LEFT_PAREN);
+        Expression expr = expression();
+        match(TipoToken.RIGHT_PAREN);
+        Statement body = statement();
+        return new StmtLoop(expr,body);
+    }
+
+    private Statement block(){
+        match(TipoToken.LEFT_BRACE);
+        List<Statement> stmts = new ArrayList<>();
+        stmts = declaration(stmts);
+        match(TipoToken.RIGHT_BRACE);
+        return new StmtBlock(stmts);
     }
 
     private Expression expression(){
@@ -318,8 +458,8 @@ public class AST {
         match(TipoToken.LEFT_PAREN);
         List<Token> params = parametersOpc();
         match(TipoToken.RIGHT_PAREN);
-        StmtBlock body = block();
-        return new StmtFunction(id, params, body);
+        Statement body = block();
+        return new StmtFunction(id, params, (StmtBlock) body);
     }
 
     private List<Token> parametersOpc(){
@@ -384,6 +524,7 @@ public class AST {
         else{
             String message = "Error. Se esperaba " + preanalisis.tipo +
                     " pero se encontró " + tt;
+            System.out.println(message);
         }
     }
 
