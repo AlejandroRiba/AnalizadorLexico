@@ -1,5 +1,6 @@
 package Utils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -18,7 +19,10 @@ public class AST {
     // ...
     // ...
     // ...
-
+    private Statement funDecl(){
+        match(TipoToken.FUN);
+        return function();
+    }
 
     private Statement varDecl(){
         match(TipoToken.VAR);
@@ -259,7 +263,7 @@ public class AST {
     private Expression call2(Expression expr){
         if (preanalisis.tipo == TipoToken.LEFT_PAREN) {
             match(TipoToken.LEFT_PAREN);
-            List<Expression> lstArguments = null; //= argumentsOptional();
+            List<Expression> lstArguments = argumentsOpc();
             match(TipoToken.RIGHT_PAREN);
             ExprCallFunction ecf = new ExprCallFunction(expr, lstArguments);
             return call2(ecf);
@@ -308,8 +312,69 @@ public class AST {
         return null;
     }
 
+    private Statement function(){
+        match(TipoToken.IDENTIFIER);
+        Token id = previous();
+        match(TipoToken.LEFT_PAREN);
+        List<Token> params = parametersOpc();
+        match(TipoToken.RIGHT_PAREN);
+        StmtBlock body = block();
+        return new StmtFunction(id, params, body);
+    }
 
+    private List<Token> parametersOpc(){
+        List<Token> params = new ArrayList<>();
 
+        if(preanalisis.tipo == TipoToken.IDENTIFIER){
+            params = parameters(params);
+            return params;
+        }
+        return null;
+    }
+
+    private List<Token> parameters(List<Token> params){
+        match(TipoToken.IDENTIFIER);
+        Token id = previous();
+        params.add(id);
+        params = parameters2(params);
+        return params;
+    }
+
+    private List<Token> parameters2(List<Token> params){
+        if(preanalisis.tipo == TipoToken.COMMA){
+            match(TipoToken.COMMA);
+            match(TipoToken.IDENTIFIER);
+            Token id = previous();
+            params.add(id);
+            return parameters2(params);
+        }
+        return params;
+    }
+
+    private List<Expression> argumentsOpc(){
+        List<Expression> args = new ArrayList<>();
+
+        if(isEXPR()){
+            Expression expr = expression();
+            args.add(expr);
+            arguments(args);
+            return args;
+        }
+        return null;
+    }
+
+    private void arguments(List<Expression> args){
+        if(preanalisis.tipo == TipoToken.COMMA){
+            match(TipoToken.COMMA);
+            Expression expr = expression();
+            args.add(expr);
+            arguments(args);
+        }
+    }
+
+    private boolean isEXPR(){
+        return preanalisis.tipo == TipoToken.BANG || preanalisis.tipo == TipoToken.MINUS || preanalisis.tipo == TipoToken.TRUE || preanalisis.tipo == TipoToken.FALSE || preanalisis.tipo == TipoToken.NULL || preanalisis.tipo == TipoToken.NUMBER || preanalisis.tipo == TipoToken.STRING || preanalisis.tipo == TipoToken.IDENTIFIER || preanalisis.tipo == TipoToken.LEFT_PAREN;
+    }
 
     private void match(TipoToken tt){
         if(preanalisis.tipo ==  tt){
