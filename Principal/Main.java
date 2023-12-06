@@ -55,10 +55,10 @@ public class Main {
             List<Token> tokens = scanner.scan();
             List<Statement> program;
 
-            for(Token token : tokens){
+            /*for(Token token : tokens){
                 System.out.println(token);
-            }
-
+            }*/
+            //comento la impresión de tokens
             if(!existenErrores) {
                 Parser parser = new ASDR(tokens);
                 parser.parse();

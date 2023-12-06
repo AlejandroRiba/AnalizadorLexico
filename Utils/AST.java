@@ -5,10 +5,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import Principal.Main;
 import Statements.*;
 import Expressions.*;
 
 public class AST {
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_RESET = "\u001B[0m";
     private final List<Token> tokens;
     private int i = 0;
     private Token preanalisis;
@@ -218,11 +221,18 @@ public class AST {
     private Expression assignmentOpc(Expression expr){
         Expression expr2;
 
-        if(preanalisis.tipo == TipoToken.EQUAL){
-            ExprVariable exprVar = (ExprVariable) expr;
-            match(TipoToken.EQUAL);
-            expr2 = expression();
-            return new ExprAssign(exprVar, expr2);
+        if(preanalisis.tipo == TipoToken.EQUAL) {
+            Token t;
+            if (expr instanceof ExprVariable) {
+                t = ((ExprVariable) expr).name;
+                match(TipoToken.EQUAL);
+                expr2 = expression();
+                return new ExprAssign(t, expr2);
+            } else {
+                //envio de error
+                System.out.println(ANSI_RED + "Error, solo los identificadores se pueden asignar." + ANSI_RESET);
+                Main.error(1, "Error");
+            }
         }
         return expr;
     }
