@@ -1,6 +1,7 @@
 package Utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -20,7 +21,9 @@ public class AST {
     public List<Statement> program(){
         List<Statement> program = new ArrayList<>();
         if(preanalisis.tipo != TipoToken.EOF){
-            return declaration(program);
+            List<Statement>  res = declaration(program);
+
+            return res;
         }
         return null;
     }
@@ -91,12 +94,32 @@ public class AST {
     private Statement forStmt(){
         match(TipoToken.FOR);
         match(TipoToken.LEFT_PAREN);
-        Statement stmt1 = forStmt1();
-        Expression expr2 = forStmt2();
-        Expression expr3 = forStmt3();
+        Statement initializer = forStmt1();
+        Expression condition = forStmt2();
+        Expression increment = forStmt3();
         match(TipoToken.RIGHT_PAREN);
         Statement body = statement();
-        return new StmtFor(stmt1,expr2,expr3,body);
+        //return new StmtFor(stmt1,expr2,expr3,body);
+        //"Desugar" incremento
+        if (increment != null){
+            body = new StmtBlock(Arrays.asList(
+                        body,
+                        new StmtExpression(increment)
+                )
+            );
+        }
+
+        //"Desugar" condición
+        if (condition == null){
+            condition = new ExprLiteral(true);
+        }
+        body = new StmtLoop(condition,body);
+
+        //"Desugar" inicialización
+        if (initializer != null){
+            body = new StmtBlock(Arrays.asList(initializer, body));
+        }
+        return body;
     }
 
     private Statement forStmt1(){
