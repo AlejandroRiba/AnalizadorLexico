@@ -1,5 +1,6 @@
 package Statements;
 
+import Utils.TablaSimbolos;
 import Utils.Token;
 
 import java.util.List;
@@ -14,4 +15,13 @@ public class StmtFunction extends Statement {
         this.params = params;
         this.body = body;
     }
+
+    public String getName(){ return this.name.getLexema(); }
+
+    @Override
+    public Object ejecutar(TablaSimbolos tabla){
+        tabla.asignar(name.getLexema(), this);
+        return null;
+    }
+
 }
