@@ -15,6 +15,7 @@ public class Main {
 
     static boolean existenErrores = false;
 
+
     public static void main(String[] args) throws IOException {
         if(args.length > 1) {
             System.out.println("Uso correcto: Interprete [archivo.txt]");
@@ -65,10 +66,14 @@ public class Main {
             }
 
             if(!existenErrores){
+                TablaSimbolos tabla = new TablaSimbolos();
                 AST ast = new AST(tokens);
                 program = ast.program();
-                for(Statement stmt : program){
-                    System.out.println(stmt);
+
+                if(program != null){
+                    for(Statement stmt : program){
+                        stmt.resolver(tabla);
+                    }
                 }
             }
 

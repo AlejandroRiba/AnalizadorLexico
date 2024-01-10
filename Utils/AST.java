@@ -24,7 +24,7 @@ public class AST {
     public List<Statement> program(){
         List<Statement> program = new ArrayList<>();
         if(preanalisis.tipo != TipoToken.EOF){
-            List<Statement>  res = declaration(program);
+            List<Statement> res = declaration(program);
 
             return res;
         }

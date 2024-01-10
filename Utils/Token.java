@@ -20,4 +20,12 @@ public class Token {
     public String toString(){
         return "<" + tipo + " " + lexema + " " + literal + ">";
     }
+
+    public String getLexema(){
+        return this.lexema;
+    }
+
+    public TipoToken getTipo(){
+        return this.tipo;
+    }
 }
