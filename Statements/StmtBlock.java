@@ -13,12 +13,13 @@ public class StmtBlock extends Statement{
 
     @Override
     public Object ejecutar(TablaSimbolos tabla){
+        TablaSimbolos inferior = new TablaSimbolos(tabla);
         for(Statement stmt : statements){
             if(stmt != null){
-                stmt.ejecutar(tabla);
-            }
-            if(stmt instanceof StmtReturn){
-                return stmt.ejecutar(tabla);
+                if(stmt instanceof StmtReturn){
+                    return stmt.ejecutar(inferior);
+                }
+                stmt.ejecutar(inferior);
             }
         }
         return null;

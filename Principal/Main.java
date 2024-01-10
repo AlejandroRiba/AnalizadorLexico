@@ -72,7 +72,7 @@ public class Main {
 
                 if(program != null){
                     for(Statement stmt : program){
-                        stmt.resolver(tabla);
+                        stmt.ejecutar(tabla);
                     }
                 }
             }

@@ -20,13 +20,14 @@ public class ExprCallFunction extends Expression{
 
     @Override
     public Object resolver(TablaSimbolos tabla){
+        TablaSimbolos inferior = new TablaSimbolos(tabla);
         if(!(callee instanceof ExprVariable)){
-            throw new RuntimeException("No fue posible llamar a la funcion.");
+            throw new RuntimeException("No fue posible llamar a la funcion");
         }
 
         Object estrFunc = callee.resolver(tabla);
         if(!(estrFunc instanceof StmtFunction)){
-            throw new RuntimeException("Identificador inválido para llamar a una función.");
+            throw new RuntimeException("Identificador inválido para llamar a una función");
         }
 
         List<Object> argumentos = new ArrayList<>();
@@ -35,14 +36,14 @@ public class ExprCallFunction extends Expression{
         }
 
         if(argumentos.size() != ((StmtFunction) estrFunc).params.size()){
-            throw new RuntimeException("La llamada a función tiene más o menos argumentos de los necesarios.");
+            throw new RuntimeException("La llamada a la función '" + ((ExprVariable) callee).getNombre() + "' tiene más o menos argumentos de los necesarios.");
         }
         int n = 0;
         for (Token token : ((StmtFunction) estrFunc).params){
-            tabla.asignar(token.getLexema(), argumentos.get(n));
+            inferior.asignar(token.getLexema(), argumentos.get(n));
             n++;
         }
 
-        return ((StmtFunction) estrFunc).body.ejecutar(tabla);
+        return ((StmtFunction) estrFunc).body.ejecutar(inferior);
     }
 }

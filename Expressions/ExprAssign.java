@@ -19,7 +19,7 @@ public class ExprAssign extends Expression{
             tabla.asignar(name.getLexema(), valor);
             return valor;
         }else{
-            throw new RuntimeException("Variable no definida '" + name.getLexema() + "'.");
+            throw new RuntimeException("Variable no definida '" + name.getLexema() + "'");
         }
     }
 }

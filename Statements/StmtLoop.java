@@ -15,6 +15,12 @@ public class StmtLoop extends Statement {
 
     @Override
     public Object ejecutar(TablaSimbolos tabla){
+        Object condicion = condition.resolver(tabla);
+
+        if(!(condicion instanceof  Boolean)){
+            throw new RuntimeException("Condicion de loop incorrecta");
+        }
+
         while ((boolean)condition.resolver(tabla)){
             body.ejecutar(tabla);
         }
